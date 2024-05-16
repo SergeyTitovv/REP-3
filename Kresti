@@ -1,0 +1,225 @@
+#include <iostream>
+
+using namespace std;
+
+class Field
+{
+private:
+
+    char* field;
+    int size;
+
+public:
+
+    Field(int size) : size(size)
+    {
+        field = new char[size * size];
+
+        for (int i = 0; i < size * size; i++)
+        {
+            field[i] = ' ';
+        }
+    }
+
+    ~Field()
+    {
+        delete[] field;
+    }
+
+    char* operator[](int row)
+    {
+        return field + row * size;
+    }
+
+    int getSize() const
+    {
+        return size;
+    }
+
+    void display()
+    {
+        system("cls");
+
+        for (int i = 0; i < size; i++)
+        {
+            cout << "--";
+        }
+        cout << "-\n";
+
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                cout << "|" << field[i * size + j];
+            }
+            cout << "|\n";
+
+            for (int j = 0; j < size; j++)
+            {
+                cout << "--";
+            }
+            cout << "-\n";
+        }
+    }
+};
+
+class Checker
+{
+public:
+    static char check(Field& field)
+        {
+            int size = field.getSize();
+            char g, v, d1, d2;
+
+            for (int i = 0; i < size; i++)
+            {
+                g = field[i][0];
+                for (int j = 0; j < size; j++)
+                {
+                    if (field[i][j] != g || g == ' ')
+                    {
+                        g = ' ';
+                        break;
+                    }
+                }
+                if (g != ' ')
+                {
+                    return g;
+                }
+
+                v = field[0][i];
+                for (int j = 0; j < size; j++)
+                {
+                    if (field[j][i] != v || v == ' ')
+                    {
+                        v = ' ';
+                        break;
+                    }
+                }
+                if (v != ' ')
+                {
+                    return v;
+                }
+            }
+
+            d1 = field[0][0];
+            d2 = field[0][size - 1];
+            for (int i = 0; i < size; i++)
+            {
+                if (field[i][i] != d1)
+                {
+                    d1 = ' ';
+                    break;
+                }
+            }
+            if (d1 != ' ')
+            {
+                return d1;
+            }
+
+            for (int i = 0; i < size; i++)
+            {
+                if (field[i][size - 1 - i] != d2)
+                {
+                    d2 = ' ';
+                    break;
+                }
+            }
+            if (d2 != ' ')
+            {
+                return d2;
+            }
+
+            return ' ';
+        }
+};
+
+class Player
+{
+public:
+    static void getMove(int& i, int& j, int size)
+    {
+        bool validInput = false;
+        while (!validInput)
+        {
+            cout << "Введите координаты хода x y (через пробел): ";
+            cin >> i >> j;
+            if (i > 0 && i <= size && j > 0 && j <= size)
+            {
+                validInput = true;
+            }
+            else
+            {
+                cout << "Повторите ввод\n";
+            }
+        }
+    }
+};
+
+class Game
+{
+private:
+    Field field;
+    int player;
+
+public:
+    Game(int size) : field(size), player('x') {}
+
+    void play()
+    {
+        int i = 0, j = 0;
+        bool running = true;
+        char result;
+
+        while (running)
+        {
+            field.display();
+
+            if (player == 'x')
+            {
+                cout << "игрок X ходит\n";
+            }
+            else
+            {
+                cout << "игрок O ходит\n";
+            }
+
+            Player::getMove(i, j, field.getSize());
+
+            if (field[i - 1][j - 1] == ' ')
+            {
+                field[i - 1][j - 1] = player;
+                result = Checker::check(field);
+
+                if (result != ' ')
+                {
+                    field.display();
+                    cout << result << " выиграл!" << endl;
+                    running = false;
+                }
+                else
+                {
+                    player = (player == 'x') ? 'o' : 'x';
+                }
+            }
+            else
+            {
+                cout << "Эта ячейка уже занята. Попробуйте снова.\n";
+            }
+        }
+    }
+};
+
+int main()
+{
+setlocale(LC_ALL, "Rus");
+
+int size;
+cout << "Введите размер поля: ";
+cin >> size;
+
+Game game(size);
+game.play();
+
+return 0;
+}
